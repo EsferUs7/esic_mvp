@@ -4,7 +4,7 @@ CREATE TABLE Groups (
     period BIGINT NOT NULL DEFAULT 3600,
     last_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     send_after BIGINT
-)
+);
 
 CREATE TABLE User_info (
     user_id BIGINT NOT NULL,
