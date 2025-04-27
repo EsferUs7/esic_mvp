@@ -1,6 +1,6 @@
 CREATE TABLE User_info (
-    user_id BIGINT NOT NULL FOREIGN KEY,
-    group_id BIGINT NOT NULL FOREIGN KEY,
+    user_id BIGINT NOT NULL,
+    group_id BIGINT NOT NULL REFERENCES Groups(group_id) ON DELETE CASCADE,
     tag_name TEXT NOT NULL,
     points BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, group_id)
