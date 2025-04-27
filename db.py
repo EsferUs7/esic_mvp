@@ -42,7 +42,36 @@ class DBConnection:
         self._cursor.execute(f"UPDATE groups SET period = {period} WHERE group_id = {group_id}")
 
     def set_time(self, group_id: int, time: int) -> None:
+        if time == 0:
+            time = None
+
         self._cursor.execute(f"UPDATE groups SET send_after = {time} WHERE group_id = {group_id}")
+
+    def set_last_message(self, group_id: int) -> None:
+        self._cursor.execute(f"UPDATE groups SET last_message = '{datetime.now()}' WHERE group_id = {group_id}")
+
+    def is_period(self, group_id: int) -> bool:
+        self._cursor.execute(f"SELECT * FROM groups WHERE group_id = {group_id}")
+
+        query_result = self._cursor.fetchone()
+
+        if (datetime.now() - query_result[2]).total_seconds() > query_result[1]:
+            return True
+        
+        return False
+    
+    def is_time(self, group_id: int) -> bool:
+        self._cursor.execute(f"SELECT * FROM groups WHERE group_id = {group_id}")
+
+        query_result = self._cursor.fetchone()
+
+        if query_result[3] is None:
+            return False
+
+        if (datetime.now() - query_result[2]).total_seconds() > query_result[3]:
+            return True
+        
+        return False
 
     def get_question(self) -> dict[str, object]:
         self._cursor.execute("SELECT * FROM questions q JOIN answers a ON a.foreign_question = q.id_question WHERE q.id_question = (SELECT id_question FROM questions ORDER BY RANDOM() LIMIT 1)")
