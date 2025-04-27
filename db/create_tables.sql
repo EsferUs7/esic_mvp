@@ -1,8 +1,8 @@
 CREATE TABLE User_info (
     user_id SERIAL PRIMARY KEY,
-    tag_name TEXT ,
+    tag_name TEXT,
     points INTEGER NOT NULL DEFAULT 0,
-    group_id INTEGER NOT NULL
+    group_id INTEGER REFERENCES Group(group_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Questions (
@@ -20,3 +20,10 @@ CREATE TABLE Answers (
         REFERENCES Questions(id_question)
         ON DELETE CASCADE
 );
+
+CREATE TABLE Groups (
+    group_id SERIAL PRIMARY KEY,
+    period INT NOT NULL DEFAULT 3600,
+    last_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    send_after INT
+)
