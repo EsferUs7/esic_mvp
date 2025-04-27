@@ -5,7 +5,12 @@ from datetime import datetime
 
 class DBConnection:
     def __init__(self) -> None:
-        self._connection = connect(getenv("DATABASE_URL"))
+        self._connection = connect(
+            dbname=getenv("DB_NAME"),
+            host=getenv("DB_HOST"),
+            user=getenv("DB_USER"),
+            password=getenv("DB_PASSWORD"),
+        )
         self._connection.autocommit = True
         self._cursor = self._connection.cursor()
 
