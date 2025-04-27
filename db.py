@@ -56,28 +56,35 @@ class DBConnection:
     def set_last_message(self, group_id: int) -> None:
         self._cursor.execute(f"UPDATE groups SET last_message = '{datetime.now()}' WHERE group_id = {group_id}")
 
-    def is_period(self, group_id: int) -> bool:
-        self._cursor.execute(f"SELECT * FROM groups WHERE group_id = {group_id}")
+    def get_groups_with_ended_period(self) -> list[int]:
+        self._cursor.execute("SELECT * FROM groups")
 
-        query_result = self._cursor.fetchone()
+        result = []
 
-        if (datetime.now() - query_result[2]).total_seconds() > query_result[1]:
-            return True
-        
-        return False
+        for row in self._cursor.fetchall():
+            if (datetime.now() - row[2]).total_seconds() > row[1]:
+                result.append(row[0])
+
+        return result
     
-    def is_time(self, group_id: int) -> bool:
-        self._cursor.execute(f"SELECT * FROM groups WHERE group_id = {group_id}")
+    def get_groups_with_ended_time(self) -> list[int]:
+        self._cursor.execute("SELECT * FROM groups WHERE send_after IS NOT NULL")
 
-        query_result = self._cursor.fetchone()
+        result = []
 
-        if query_result[3] is None:
-            return False
+        for row in self._cursor.fetchall():
+            if (datetime.now() - row[2]).total_seconds() > row[3]:
+                result.append(row[0])
 
-        if (datetime.now() - query_result[2]).total_seconds() > query_result[3]:
-            return True
-        
-        return False
+        return result
+
+    def add_user_answered_question(self, user_id: int, group_id: int, question_id: int) -> None:
+        self._cursor.execute(f"INSERT INTO user_answered_questions (user_id, group_id, question_id) VALUES ({user_id}, {group_id}, {question_id})")
+
+    def has_user_answered_question(self, user_id: int, group_id: int, question_id: int) -> bool:
+        self._cursor.execute(f"SELECT * FROM user_answered_questions WHERE user_id = {user_id} AND group_id = {group_id} AND question_id = {question_id}")
+
+        return len(self._cursor.fetchall()) > 0
 
     def get_question(self) -> dict[str, object]:
         self._cursor.execute("SELECT * FROM questions q JOIN answers a ON a.foreign_question = q.id_question WHERE q.id_question = (SELECT id_question FROM questions ORDER BY RANDOM() LIMIT 1)")
@@ -87,13 +94,15 @@ class DBConnection:
         }
 
         for row in self._cursor.fetchall():
+            result["question_id"] = row[0]
             result["question"] = row[1]
-            result["answers"].append(row[2])
+            result["answers"].append(row[4])
 
-            if result[5] is True:
-                result["correct_answer"] = row[2]
+            if row[5] is True:
+                result["correct_answer"] = row[4]
+
+        print(result)
 
         return result
-
   
 

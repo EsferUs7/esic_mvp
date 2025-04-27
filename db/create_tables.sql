@@ -29,3 +29,10 @@ CREATE TABLE Answers (
         REFERENCES Questions(id_question)
         ON DELETE CASCADE
 );
+
+CREATE TABLE User_answered_questions (
+    user_id BIGINT NOT NULL,
+    group_id BIGINT NOT NULL REFERENCES Groups(group_id) ON DELETE CASCADE,
+    question_id BIGINT NOT NULL REFERENCES Questions(id_question) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, group_id, question_id)
+)

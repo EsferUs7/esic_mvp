@@ -4,20 +4,16 @@ import sys
 from os import getenv
 from db import DBConnection
 
-import psycopg2
-from urllib.parse import urlparse
 from aiogram import Bot, Dispatcher, html, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import (
     CommandStart,
     Command,
-    ChatMemberUpdatedFilter,
     CommandObject,
 )
 from aiogram.types import (
     Message,
-    ChatMemberUpdated,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     CallbackQuery,
@@ -29,65 +25,38 @@ dp = Dispatcher()
 
 db = DBConnection()
 
-
-def add_user_to_db(message):
-    group_id = message.chat.id
-    user = message.from_user
+def add_user_to_db(user=None, group_id=None, message=None) -> None:
+    if message is not None:
+        group_id = message.chat.id
+        user = message.from_user
+    
     tag_name = user.username or (
         user.first_name + (f" {user.last_name}" if user.last_name else "")
     )
+    
     try:
         db.add_user(user.id, group_id, tag_name)
     except:
         pass
 
-
-def add_group_to_db(group_id):
-    db.add_group(group_id)
-
-
-def join_button():
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Приєднатися", callback_data="join_quiz")]
-        ]
-    )
-    return keyboard
-
-
 # /start
 @dp.message(CommandStart())
 async def group_start_handler(message: Message) -> None:
+    add_user_to_db(message=message)
+
     if message.chat.type in ["group", "supergroup"]:
         await message.answer("Привіт усім! Я прийомниш")
         chat_id = message.chat.id
 
-        print(chat_id)
-
-        add_group_to_db(chat_id)
-        await message.answer(
-            "Хочеш взяти участь у вікторині? Натисни кнопку нижче",
-            reply_markup=join_button(),
-        )
+        db.add_group(chat_id)
     else:
         # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
-
-# def add_user_decorator(func):
-#     def wrapper(message):
-#         user = message.from_user
-#         chat_id = message.chat.id
-#         add_user_to_db(user, chat_id)
-#         return func(message)
-
-#     return wrapper
-
-
-# /top
 @dp.message(Command("top"))
 async def top_handler(message: Message) -> None:
-    add_user_to_db(message)
+    add_user_to_db(message=message)
+
     if message.chat.type in ["group", "supergroup"]:
         chat_id = message.chat.id
         result = db.get_top(chat_id)
@@ -98,11 +67,11 @@ async def top_handler(message: Message) -> None:
         # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
-
 # /my_rating
 @dp.message(Command("my_rating"))
 async def top_handler(message: Message) -> None:
-    add_user_to_db(message)
+    add_user_to_db(message=message)
+
     if message.chat.type in ["group", "supergroup"]:
         user_id = message.from_user.id
         chat_id = message.chat.id
@@ -116,7 +85,8 @@ async def top_handler(message: Message) -> None:
 # /set_period
 @dp.message(Command("set_period"))
 async def top_handler(message: Message, command: CommandObject) -> None:
-    add_user_to_db(message)
+    add_user_to_db(message=message)
+
     param = int(command.args)
     if message.chat.type in ["group", "supergroup"]:
         chat_id = message.chat.id
@@ -130,7 +100,8 @@ async def top_handler(message: Message, command: CommandObject) -> None:
 # /set_time
 @dp.message(Command("set_time"))
 async def top_handler(message: Message, command: CommandObject) -> None:
-    add_user_to_db(message)
+    add_user_to_db(message=message)
+
     param = int(command.args)
     if message.chat.type in ["group", "supergroup"]:
         chat_id = message.chat.id
@@ -140,32 +111,67 @@ async def top_handler(message: Message, command: CommandObject) -> None:
         # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
-
-# Обробка натискання на кнопку "Приєднатися"
-@dp.callback_query(F.data == "join_quiz")
-async def handle_join_quiz(callback: CallbackQuery, bot: Bot):
+@dp.callback_query(lambda c: c.data.startswith("quiz_answer"))
+async def quiz_answer_handler(callback: CallbackQuery) -> None:
     user = callback.from_user
-    chat_id = callback.message.chat.id
+    user_id = user.id
+    group_id = callback.message.chat.id
 
-    add_user_to_db(user, chat_id)
+    add_user_to_db(user=user, group_id=group_id)
 
-    await bot.send_message(chat_id, f"{html.bold(user.full_name)} додано до вікторини!")
+    splited_data = callback.data.split("_")
 
-    await callback.answer("Ти приєднався!")
+    if db.has_user_answered_question(user_id, group_id, int(splited_data[3])):
+        await callback.answer("Ви вже відповіли на це питання!")
+    else:
+        db.add_user_answered_question(user_id, group_id, int(splited_data[3]))
+
+        is_correct = int(splited_data[2])
+
+        if is_correct:
+            db.add_points(user_id, group_id, 1)
+            await callback.answer("Правильна відповідь!")
+        else:
+            db.add_points(user_id, group_id, -1)
+            await callback.answer("Неправильна відповідь!")
 
 
-# Старт бота
-async def scheduler() -> None:
+async def scheduler(bot) -> None:
     while True:  
-        db.is_period()
-        db.is_time()
-        await asyncio.sleep(5)
+        group_ids = db.get_groups_with_ended_period()
 
+        for group_id in group_ids:
+            question_data = db.get_question()
+            question_id = question_data["question_id"]
+
+            keyboard_answers = [[InlineKeyboardButton(text=answer, callback_data=f"quiz_answer_{'1' if question_data['correct_answer'] == answer else '0'}_{question_id}")] for answer in question_data["answers"]]
+            keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_answers)
+
+            await bot.send_message(group_id, question_data["question"], reply_markup=keyboard)
+
+            db.set_last_message(group_id)
+
+        group_ids = db.get_groups_with_ended_time()
+
+        for group_id in group_ids:
+            question_data = db.get_question()
+            question_id = question_data["question_id"]
+
+            keyboard_answers = [[InlineKeyboardButton(text=answer, callback_data=f"quiz_answer_{'1' if question_data['correct_answer'] == answer else '0'}_{question_id}")] for answer in question_data["answers"]]
+            keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_answers)
+
+            await bot.send_message(group_id, question_data["question"], reply_markup=keyboard)
+
+            db.set_last_message(group_id)
+            db.set_time(group_id, 0)
+
+        await asyncio.sleep(5)
 
 async def main() -> None:
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    
+    asyncio.create_task(scheduler(bot))
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
