@@ -14,7 +14,7 @@ class DBConnection:
         self._connection.autocommit = True
         self._cursor = self._connection.cursor()
 
-    def get_top(self, group_id: int) -> list[tuple]:
+    def get_top(self, group_id: int) -> list[dict[str, object]]:
         self._cursor.execute(f"SELECT * FROM user_info WHERE group_id = {group_id} ORDER BY points DESC")
 
         result = []
