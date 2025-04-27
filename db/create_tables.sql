@@ -1,3 +1,11 @@
+
+CREATE TABLE Groups (
+    group_id BIGINT PRIMARY KEY,
+    period BIGINT NOT NULL DEFAULT 3600,
+    last_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    send_after BIGINT
+)
+
 CREATE TABLE User_info (
     user_id BIGINT NOT NULL,
     group_id BIGINT NOT NULL REFERENCES Groups(group_id) ON DELETE CASCADE,
@@ -21,10 +29,3 @@ CREATE TABLE Answers (
         REFERENCES Questions(id_question)
         ON DELETE CASCADE
 );
-
-CREATE TABLE Groups (
-    group_id BIGINT PRIMARY KEY,
-    period BIGINT NOT NULL DEFAULT 3600,
-    last_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    send_after BIGINT
-)
