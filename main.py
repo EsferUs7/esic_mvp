@@ -162,7 +162,6 @@ async def scheduler(bot) -> None:
 
             await bot.send_message(group_id, question_data["question"], reply_markup=keyboard)
 
-            db.set_last_message(group_id)
             db.set_time(group_id, 0)
 
         await asyncio.sleep(5)

@@ -45,11 +45,15 @@ class DBConnection:
         self._cursor.execute(f"UPDATE user_info SET points = points + {points} WHERE user_id = {user_id} AND group_id = {group_id}")
     
     def set_period(self, group_id: int, period: int) -> None:
+        self.set_last_message(group_id)
+
         self._cursor.execute(f"UPDATE groups SET period = {period} WHERE group_id = {group_id}")
 
     def set_time(self, group_id: int, time: int) -> None:
         if time == 0:
             time = "NULL"
+
+        self.set_last_message(group_id)
 
         self._cursor.execute(f"UPDATE groups SET send_after = {time} WHERE group_id = {group_id}")
 
@@ -100,8 +104,6 @@ class DBConnection:
 
             if row[5] is True:
                 result["correct_answer"] = row[4]
-
-        print(result)
 
         return result
   
