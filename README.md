@@ -1,15 +1,3 @@
-Це README файл.
-
-Тут ми описуємо основні поняття, визначення, функціонал та особливості нашого проєкту: ТГ-бот "ESIc".
-
-Наша команда:
-- Developer: Станіслав Бойко
-- Project Manager: Ілля Віжуткін
-- Product Manager and Tester: Есфер Усеінов
-
-
-функціонал, призначення, особливості
-
 Project Overview
 This project is a Telegram bot called ESIc designed for entertainment and educational purposes.
 The bot provides quizzes, random utilities, user ratings, and is configurable for different group chat activities.
