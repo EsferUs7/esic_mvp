@@ -1,8 +1,8 @@
 CREATE TABLE User_info (
-    user_id INTEGER NOT NULL,
-    group_id INTEGER NOT NULL,
+    user_id BIGINT NOT NULL,
+    group_id BIGINT NOT NULL,
     tag_name TEXT NOT NULL,
-    points INTEGER NOT NULL DEFAULT 0,
+    points BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, group_id)
 );
 
@@ -13,7 +13,7 @@ CREATE TABLE Questions (
 
 CREATE TABLE Answers (
     id_answer SERIAL PRIMARY KEY,
-    foreign_question INTEGER NOT NULL,
+    foreign_question BIGINT NOT NULL,
     text_answer TEXT NOT NULL,
     bool_correct BOOLEAN NOT NULL,
     CONSTRAINT fk_question
@@ -24,7 +24,7 @@ CREATE TABLE Answers (
 
 CREATE TABLE Groups (
     group_id SERIAL PRIMARY KEY,
-    period INT NOT NULL DEFAULT 3600,
+    period BIGINT NOT NULL DEFAULT 3600,
     last_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    send_after INT
+    send_after BIGINT
 )
