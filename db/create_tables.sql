@@ -1,8 +1,9 @@
 CREATE TABLE User_info (
-    user_id SERIAL PRIMARY KEY,
-    tag_name TEXT,
+    user_id INTEGER NOT NULL,
+    group_id INTEGER NOT NULL,
+    tag_name TEXT NOT NULL,
     points INTEGER NOT NULL DEFAULT 0,
-    group_id INTEGER REFERENCES Group(group_id) ON DELETE CASCADE
+    PRIMARY KEY (user_id, group_id)
 );
 
 CREATE TABLE Questions (
