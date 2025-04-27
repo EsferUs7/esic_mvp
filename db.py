@@ -30,7 +30,7 @@ class DBConnection:
 
         return result
     
-    def get_my_rating(self, user_id: int, group_id: int) -> tuple:
+    def get_my_rating(self, user_id: int, group_id: int) -> int:
         self._cursor.execute(f"SELECT * FROM user_info WHERE user_id = {user_id} AND group_id = {group_id}")
 
         return self._cursor.fetchone()[3]
