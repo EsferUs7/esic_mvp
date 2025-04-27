@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  bot:
+    image: python:3.10-slim
+    container_name: aiogram_bot
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install -r requirements.txt && python main.py"
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD} 
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/:/docker-entrypoint-initdb.d/
+
+volumes:
+  postgres_data:
