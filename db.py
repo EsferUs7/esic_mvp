@@ -39,7 +39,7 @@ class DBConnection:
         self._cursor.execute(f"INSERT INTO groups (group_id) VALUES ({group_id})")
     
     def add_user(self, user_id: int, group_id: int, tag_name: str) -> None:
-        self._cursor.execute(f"INSERT INTO user_info (user_id, group_id, tag_name) VALUES ({user_id}, {group_id}, {tag_name})")
+        self._cursor.execute(f"INSERT INTO user_info (user_id, group_id, tag_name) VALUES ({user_id}, {group_id}, '{tag_name}')")
 
     def add_points(self, user_id: int, group_id: int, points: int) -> None:
         self._cursor.execute(f"UPDATE user_info SET points = points + {points} WHERE user_id = {user_id} AND group_id = {group_id}")
