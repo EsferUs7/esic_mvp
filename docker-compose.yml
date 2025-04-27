@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  bot:
+    image: python:3.10-slim
+    container_name: aiogram_bot
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install -r requirements.txt && python main.py"
+    environment:
+      - DATABASE_URL=postgresql://bot:${DB_PASSWORD}@db:5432/postgres
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: bot
+      POSTGRES_PASSWORD: ${DB_PASSWORD} 
+      POSTGRES_DB: bot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+volumes:
+  postgres_data:
