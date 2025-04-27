@@ -7,12 +7,12 @@ CREATE TABLE User_info (
 );
 
 CREATE TABLE Questions (
-    id_question SERIAL PRIMARY KEY,
+    id_question BIGINT PRIMARY KEY,
     text_question TEXT NOT NULL
 );
 
 CREATE TABLE Answers (
-    id_answer SERIAL PRIMARY KEY,
+    id_answer BIGINT PRIMARY KEY,
     foreign_question BIGINT NOT NULL,
     text_answer TEXT NOT NULL,
     bool_correct BOOLEAN NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE Answers (
 );
 
 CREATE TABLE Groups (
-    group_id SERIAL PRIMARY KEY,
+    group_id BIGINT PRIMARY KEY,
     period BIGINT NOT NULL DEFAULT 3600,
     last_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     send_after BIGINT
