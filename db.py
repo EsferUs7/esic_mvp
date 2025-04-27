@@ -49,7 +49,7 @@ class DBConnection:
 
     def set_time(self, group_id: int, time: int) -> None:
         if time == 0:
-            time = None
+            time = "NULL"
 
         self._cursor.execute(f"UPDATE groups SET send_after = {time} WHERE group_id = {group_id}")
 
