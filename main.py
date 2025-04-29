@@ -45,7 +45,7 @@ async def group_start_handler(message: Message) -> None:
     add_user_to_db(message=message)
 
     if message.chat.type in ["group", "supergroup"]:
-        await message.answer("Привіт усім! Я прийомниш")
+        await message.answer("Привіт усім! Я бот ESIC. Почнемо нашу роботу!")
         chat_id = message.chat.id
 
         db.add_group(chat_id)
@@ -53,6 +53,7 @@ async def group_start_handler(message: Message) -> None:
         # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
+# /top
 @dp.message(Command("top"))
 async def top_handler(message: Message) -> None:
     add_user_to_db(message=message)
@@ -64,7 +65,6 @@ async def top_handler(message: Message) -> None:
             "\n".join([f"{user['tag_name']}, {user['points']}" for user in result])
         )
     else:
-        # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
 # /my_rating
@@ -78,7 +78,6 @@ async def top_handler(message: Message) -> None:
         result = db.get_my_rating(user_id, chat_id)
         await message.answer(f"{result}")
     else:
-        # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
 
@@ -93,7 +92,6 @@ async def top_handler(message: Message, command: CommandObject) -> None:
         db.set_period(chat_id, param)
         await message.answer("Період встановлено")
     else:
-        # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
 
@@ -108,7 +106,6 @@ async def top_handler(message: Message, command: CommandObject) -> None:
         db.set_time(chat_id, param)
         await message.answer("Таймер встановлено")
     else:
-        # Якщо /start у приваті
         await message.answer(f"Привіт, {html.bold(message.from_user.full_name)}!")
 
 @dp.callback_query(lambda c: c.data.startswith("quiz_answer"))
